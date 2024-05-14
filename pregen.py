@@ -274,8 +274,8 @@ def pregen(server_jar_path: str, seed: "int | None", center_spawn_x: int, center
 
     step_diameter = max(math.ceil((chunk_radius * 2 + 1) / spawn_chunk_diameter), 1)
 
-    center_spawn_chunk_x = center_spawn_x >> 4 << 4
-    center_spawn_chunk_z = center_spawn_z >> 4 << 4
+    center_spawn_chunk_x = center_spawn_x >> 4
+    center_spawn_chunk_z = center_spawn_z >> 4
     if spawn_chunk_diameter % 2 == 0:
         min_spawn_chunk_x = center_spawn_chunk_x - (step_diameter - 1) * spawn_chunk_diameter // 2
         min_spawn_chunk_z = center_spawn_chunk_z - (step_diameter - 1) * spawn_chunk_diameter // 2
