@@ -217,8 +217,8 @@ def level_dat_set_spawn_pos(level_dat_path: str, spawn_x: int, spawn_z: int):
         Data["SpawnX"] = nbtlib.tag.Int(spawn_x)
         Data["SpawnZ"] = nbtlib.tag.Int(spawn_z)
 
-def pregen(server_jar_path: str, seed: "int | None", spawn_x: int, spawn_z: int, chunk_radius: int):
-    print(f"pregen {server_jar_path} {seed} {spawn_x} {spawn_z} {chunk_radius}")
+def pregen(server_jar_path: str, seed: "int | None", center_spawn_x: int, center_spawn_z: int, chunk_radius: int):
+    print(f"pregen {server_jar_path} {seed} {center_spawn_x} {center_spawn_z} {chunk_radius}")
     
     start = time.time()
     
@@ -264,17 +264,23 @@ def pregen(server_jar_path: str, seed: "int | None", spawn_x: int, spawn_z: int,
     # 1.19.3 - -12..=12 gets features, -11..=11 gets full
     spawn_chunk_diameter = 19 # should be enough for all versions
 
-    step_radius = max(math.ceil((chunk_radius + 1) / spawn_chunk_diameter - 0.5), 0)
+    step_diameter = max(math.ceil((chunk_radius * 2 + 1) / spawn_chunk_diameter), 1)
 
-    rounded_spawn_x = (spawn_x >> 4 << 4) + 8
-    rounded_spawn_z = (spawn_z >> 4 << 4) + 8
+    center_spawn_chunk_x = center_spawn_x >> 4 << 4
+    center_spawn_chunk_z = center_spawn_z >> 4 << 4
+    if spawn_chunk_diameter % 2 == 0:
+        min_spawn_chunk_x = center_spawn_chunk_x - (step_diameter - 1) * spawn_chunk_diameter // 2
+        min_spawn_chunk_z = center_spawn_chunk_z - (step_diameter - 1) * spawn_chunk_diameter // 2
+    else:
+        min_spawn_chunk_x = center_spawn_chunk_x - (step_diameter // 2) * spawn_chunk_diameter
+        min_spawn_chunk_z = center_spawn_chunk_z - (step_diameter // 2) * spawn_chunk_diameter
 
     i = 0
-    total_steps = (step_radius * 2 + 1) ** 2
-    for dx in range(-step_radius, step_radius+1):
-        for dz in range(-step_radius, step_radius+1):
-            offset_spawn_x = rounded_spawn_x + dx * spawn_chunk_diameter * 16
-            offset_spawn_z = rounded_spawn_z + dz * spawn_chunk_diameter * 16
+    total_steps = step_diameter ** 2
+    for dx in range(step_diameter):
+        for dz in range(step_diameter):
+            offset_spawn_x = (min_spawn_chunk_x + dx * spawn_chunk_diameter) * 16 + 8
+            offset_spawn_z = (min_spawn_chunk_z + dz * spawn_chunk_diameter) * 16 + 8
             print(f"Setting spawn pos to {offset_spawn_x} {offset_spawn_z}")
             level_dat_set_spawn_pos(level_dat_path, offset_spawn_x, offset_spawn_z)
             run_server(server_jar_path, max_attempts=10)
