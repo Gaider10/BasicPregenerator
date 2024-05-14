@@ -166,8 +166,11 @@ def run_server(server_jar_path: str, print_stdout = False, max_attempts = 1):
         for attempt in range(max_attempts):
             if attempt != 0:
                 print("Failed, retrying")
-            process = subprocess.run(["java", "-jar", os.path.abspath(server_jar_path), "nogui"], cwd = server_dir_path, input = b"stop\n", stdout = subprocess.PIPE, stderr = subprocess.STDOUT, check = True)
+            process = subprocess.run(["java", "-jar", os.path.abspath(server_jar_path), "nogui"], cwd = server_dir_path, input = b"stop\n", stdout = subprocess.PIPE, stderr = subprocess.STDOUT)
             stdout = process.stdout.decode(errors="replace")
+            if process.returncode != 0:
+                print(stdout)
+                raise RuntimeError(f"The server exited with code: {process.returncode}")
             if print_stdout:
                 print(stdout)
             error_messages = {
