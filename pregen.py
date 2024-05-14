@@ -158,29 +158,29 @@ def clean():
     delete_dir_contents(server_dir_path, {"eula.txt", "world"})
     delete_dir_contents(world_dir_path, set())
 
-def run_server(server_jar_path: str, print_stdout = False):
+def run_server(server_jar_path: str, print_stdout = False, max_attempts = 1):
     print(f"Running {server_jar_path}")
     start = time.time()
     try:
-        process = subprocess.run(["java", "-jar", os.path.abspath(server_jar_path), "nogui"], cwd = server_dir_path, input = b"stop\n", stdout = subprocess.PIPE, stderr = subprocess.STDOUT, check = True)
-        stdout = process.stdout.decode(errors="replace")
-        no_success_message = 'For help, type "help"' not in stdout
-        if print_stdout or no_success_message:
-            print(stdout)
-        if no_success_message:
+        for attempt in range(max_attempts):
+            if attempt != 0:
+                print("Failed, retrying")
+            process = subprocess.run(["java", "-jar", os.path.abspath(server_jar_path), "nogui"], cwd = server_dir_path, input = b"stop\n", stdout = subprocess.PIPE, stderr = subprocess.STDOUT, check = True)
+            stdout = process.stdout.decode(errors="replace")
+            success = 'For help, type "help"' in stdout
+            if print_stdout or not success:
+                print(stdout)
+            error_messages = {
+                "You need to agree to the EULA in order to run the server",
+                "This world must be opened in an older version (like 1.6.4) to be safely converted",
+            }
+            for error_message in error_messages:
+                if error_message in stdout:
+                    raise RuntimeError(f"The server didn't run successfully: {error_message}")
+            if success:
+                break
+        else:
             raise RuntimeError("The server didn't run successfully")
-        # error_messages = {
-        #     "You need to agree to the EULA in order to run the server": None,
-        #     "This world must be opened in an older version (like 1.6.4) to be safely converted": None,
-        #     "[SEVERE] Unexpected exception": "[SEVERE] Unexpected exception (Seems to just happen randomly on old alpha versions, try again I guess)",
-        # }
-        # for (k, v) in error_messages.items():
-        #     if v is None:
-        #         v = k
-        #     if k in stdout:
-        #         if not print_stdout:
-        #             print(stdout)
-        #         raise RuntimeError(v)
     finally:
         end = time.time()
         print(f"Took {end - start} s")
@@ -273,7 +273,7 @@ def pregen(server_jar_path: str, seed: "int | None", spawn_x: int, spawn_z: int,
             offset_spawn_z = rounded_spawn_z + dz * spawn_chunk_diameter * 16
             print(f"Setting spawn pos to {offset_spawn_x} {offset_spawn_z}")
             level_dat_set_spawn_pos(level_dat_path, offset_spawn_x, offset_spawn_z)
-            run_server(server_jar_path)
+            run_server(server_jar_path, max_attempts=10)
             i += 1
             print(f"{i} / {total_steps} | {100 * i / total_steps:.1f}% Done")
     
