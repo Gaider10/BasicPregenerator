@@ -27,9 +27,9 @@ def make_cached(func):
     cache = {}
     def decorated(*args):
         key = tuple(*args)
-        if key in cache:
-            return cache[key]
-        return func(*args)
+        if key not in cache:
+            cache[key] = func(*args)
+        return cache[key]
     return decorated
 
 def get_cached_json(cached_path: str, getter):
