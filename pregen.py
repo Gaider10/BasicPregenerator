@@ -192,16 +192,23 @@ def run(server_jar_path: str):
     run_server(server_jar_path)
     pass
 
+def level_dat_Data(level_dat):
+    # Seems like it's level_dat[""]["Data"] with nbtlib 1 and level_dat["Data"] with nbtlib 2
+    if "Data" in level_dat:
+        return level_dat["Data"]
+    else:
+        return level_dat[""]["Data"]
+
 def level_dat_get_seed(level_dat_path: str) -> int:
     with nbtlib.load(level_dat_path) as level_dat:
-        Data = level_dat[""]["Data"]
+        Data = level_dat_Data(level_dat)
         if "RandomSeed" in Data:
             return int(Data["RandomSeed"])
         return Data["WorldGenSettings"]["seed"]
 
 def level_dat_set_seed(level_dat_path: str, seed: int):
     with nbtlib.load(level_dat_path) as level_dat:
-        Data = level_dat[""]["Data"]
+        Data = level_dat_Data(level_dat)
         if "RandomSeed" in Data:
             Data["RandomSeed"] = nbtlib.tag.Long(seed)
         else:
@@ -209,12 +216,12 @@ def level_dat_set_seed(level_dat_path: str, seed: int):
 
 def level_dat_get_spawn_pos(level_dat_path: str) -> "tuple[int, int]":
     with nbtlib.load(level_dat_path) as level_dat:
-        Data = level_dat[""]["Data"]
+        Data = level_dat_Data(level_dat)
         return (int(Data["SpawnX"]), int(Data["SpawnZ"]))
 
 def level_dat_set_spawn_pos(level_dat_path: str, spawn_x: int, spawn_z: int):
     with nbtlib.load(level_dat_path) as level_dat:
-        Data = level_dat[""]["Data"]
+        Data = level_dat_Data(level_dat)
         Data["SpawnX"] = nbtlib.tag.Int(spawn_x)
         Data["SpawnZ"] = nbtlib.tag.Int(spawn_z)
 
