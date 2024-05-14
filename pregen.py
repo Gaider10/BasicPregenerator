@@ -218,6 +218,8 @@ def level_dat_set_spawn_pos(level_dat_path: str, spawn_x: int, spawn_z: int):
 def pregen(server_jar_path: str, seed: "int | None", spawn_x: int, spawn_z: int, chunk_radius: int):
     print(f"pregen {server_jar_path} {seed} {spawn_x} {spawn_z} {chunk_radius}")
     
+    start = time.time()
+    
     final_spawn_x = 0
     final_spawn_z = 0
 
@@ -278,6 +280,9 @@ def pregen(server_jar_path: str, seed: "int | None", spawn_x: int, spawn_z: int,
             print(f"{i} / {total_steps} | {100 * i / total_steps:.1f}% Done")
     
     level_dat_set_spawn_pos(level_dat_path, final_spawn_x, final_spawn_z)
+
+    end = time.time()
+    print(f"Took {end - start} s in total")
 
 
 def abort(*args):
