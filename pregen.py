@@ -167,19 +167,21 @@ def run_server(server_jar_path: str, print_stdout = False, max_attempts = 1):
                 print("Failed, retrying")
             process = subprocess.run(["java", "-jar", os.path.abspath(server_jar_path), "nogui"], cwd = server_dir_path, input = b"stop\n", stdout = subprocess.PIPE, stderr = subprocess.STDOUT, check = True)
             stdout = process.stdout.decode(errors="replace")
-            success = 'For help, type "help"' in stdout
-            if print_stdout or not success:
+            if print_stdout:
                 print(stdout)
             error_messages = {
                 "You need to agree to the EULA in order to run the server",
                 "This world must be opened in an older version (like 1.6.4) to be safely converted",
             }
-            for error_message in error_messages:
-                if error_message in stdout:
-                    raise RuntimeError(f"The server didn't run successfully: {error_message}")
+            error_message = next((error_message for error_message in error_messages if error_message in stdout), None)
+            if error_message is not None:
+                raise RuntimeError(f"The server didn't run successfully: {error_message}")
+            success = 'For help, type "help"' in stdout
             if success:
                 break
         else:
+            if not print_stdout:
+                print(stdout)
             raise RuntimeError("The server didn't run successfully")
     finally:
         end = time.time()
