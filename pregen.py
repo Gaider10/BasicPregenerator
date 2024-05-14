@@ -18,9 +18,10 @@ world_dir_path = os.path.join(server_dir_path, "world")
 level_dat_path = os.path.join(world_dir_path, "level.dat")
 
 def setup_dirs():
-    pathlib.Path(server_dir_path).mkdir(exist_ok = True)
     pathlib.Path(cache_dir_path).mkdir(exist_ok = True)
     pathlib.Path(versions_dir_path).mkdir(exist_ok = True)
+    pathlib.Path(server_dir_path).mkdir(exist_ok = True)
+    pathlib.Path(world_dir_path).mkdir(exist_ok = True)
 
 def make_cached(func):
     cache = {}
